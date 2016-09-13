@@ -20,7 +20,7 @@ public class World extends JPanel implements ActionListener {
 	public static final int WORLD_HEIGHT = SCREEN_HEIGHT / SQUARE_SIZE;
 	public static final int DELAY = 1;
 	public static final int SPEED_UP = 1;
-	public static final int INIT_NUM_TREES = 100; // numbers of trees in the
+	public static final int INIT_NUM_TREES = 20; // numbers of trees in the
 													// initial state.
 
 	public static final int FULL_SUNLIGHT = 20;
