@@ -41,12 +41,12 @@ public class Tree {
 
 	public Tree(int x, int y, Grid[][] map) {
 		root = new BranchNode(x, y);
-		addLeaf(map, x, y);
+		root.addLeaf(this, map);
 	}
 
 	public Tree(Grid[][] map) {
 		root = new BranchNode();
-		addLeaf(map, root.x, root.y);
+		root.addLeaf(this, map);
 	}
 
 	// Reproduce from parent
@@ -111,18 +111,7 @@ public class Tree {
 		root = new BranchNode(x, y);
 
 		// make new leaf on new branch
-		addLeaf(map, x, y);
-	}
-
-	private void addLeaf(Grid[][] map, int x, int y) {
-		// assumes x and y are in the grid, only bound check x when leaves are
-		// big
-		for (int i = 0; i < leaf_size; i++) {
-			int l = x + i - leaf_size / 2;
-			if (l >= 0 && l < World.WORLD_WIDTH) {
-				map[l][y].type = World.OBJ_LEAF;
-			}
-		}
+		root.addLeaf(this, map);
 	}
 
 	public void paintTree(Graphics2D g2, int i) {
@@ -178,7 +167,7 @@ public class Tree {
 	}
 
 	private void photosynthesis(BranchNode bn, Grid[][] map) {
-		if (bn.children.size() == 0) {
+		if (bn.leaf_alive) {
 			for (int i = 0; i < leaf_size; i++) {
 				int l = bn.x + i - leaf_size / 2;
 				if (l >= 0 && l < World.WORLD_WIDTH) {
@@ -187,6 +176,8 @@ public class Tree {
 				}
 			}
 		} else {
+			// If I really want to be safe, I should put a check for if bn.children.size() > 0
+			// But the for loop here checks it for me already.
 			for (int i = 0; i < bn.children.size(); i++) {
 				photosynthesis(bn.children.get(i), map);
 			}
@@ -215,13 +206,7 @@ public class Tree {
 				removeLeaves(map, bn.children.get(i));
 			}
 		} else {
-			for (int i = 0; i < leaf_size; i++) {
-				int l = bn.x + i - leaf_size / 2;
-				if (l >= 0 && l < World.WORLD_WIDTH
-						&& map[l][bn.y].type == World.OBJ_LEAF) {
-					map[l][bn.y].type = World.OBJ_EMPTY;
-				}
-			}
+			bn.killLeaf(this, map);
 		}
 	}
 
@@ -281,22 +266,15 @@ public class Tree {
 		// add the branch to the total body.
 		amount_of_tree += (int) Math.sqrt((newX - parent.x) * (newX - parent.x)
 				+ (newY - parent.y) * (newY - parent.y));
-		parent.children.add(new BranchNode(parent, newX, newY));
+		BranchNode child = new BranchNode(parent, newX, newY);
+		parent.children.add(child);
 
 		if (parent.leaf_alive) {
 			// kill leaf, because branch is growing off of it
-			parent.leaf_alive = false;
-			for (int i = 0; i < leaf_size; i++) {
-				int l = parent.x + i - leaf_size / 2;
-				if (l >= 0 && l < World.WORLD_WIDTH
-						&& map[l][parent.y].type == World.OBJ_LEAF) {
-					map[l][parent.y].type = World.OBJ_EMPTY;
-				}
-			}
-			map[parent.x][parent.y].type = World.OBJ_NODE;
+			parent.killLeaf(this, map);
 		}
 
 		// make new leaf on new branch
-		addLeaf(map, newX, newY);
+		child.addLeaf(this, map);
 	}
 }
