@@ -167,6 +167,7 @@ public class Tree {
 	}
 
 	private void photosynthesis(BranchNode bn, Grid[][] map) {
+		// Process individual nodes here
 		if (bn.leaf_alive) {
 			for (int i = 0; i < leaf_size; i++) {
 				int l = bn.x + i - leaf_size / 2;
@@ -175,13 +176,12 @@ public class Tree {
 					map[l][bn.y].sunlight -= World.LEAF_BLOCK;
 				}
 			}
-		} else {
-			// If I really want to be safe, I should put a check for if bn.children.size() > 0
-			// But the for loop here checks it for me already.
-			for (int i = 0; i < bn.children.size(); i++) {
-				photosynthesis(bn.children.get(i), map);
-			}
 		}
+		// If I really want to be safe, I should put a check for if bn.children.size() > 0
+		// But the for loop here checks it for me already.
+		for (int i = 0; i < bn.children.size(); i++) {
+			photosynthesis(bn.children.get(i), map);
+		}		
 	}
 
 	public void reproduce(Grid[][] map, ArrayList<Tree> trees) {
@@ -201,13 +201,12 @@ public class Tree {
 	}
 
 	private void removeLeaves(Grid[][] map, BranchNode bn) {
-		if (bn.children.size() > 0) {
-			for (int i = 0; i < bn.children.size(); i++) {
-				removeLeaves(map, bn.children.get(i));
-			}
-		} else {
+		if (bn.leaf_alive) {
 			bn.killLeaf(this, map);
 		}
+		for (int i = 0; i < bn.children.size(); i++) {
+			removeLeaves(map, bn.children.get(i));
+		}		
 	}
 
 	public void grow(Grid[][] map) {
