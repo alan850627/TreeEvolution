@@ -10,6 +10,8 @@ public class Tree {
 													// sector the gene
 													// represents.
 	private static final int GENE_TOTAL = 10; // must be multiple of 5.
+	private static final int LEAF_LIFETIME = 1000; // number of frames before
+													// a leaf dies.
 	private static final int COLOR_CHANGE_TIME = 10; // number of frames before
 														// a color changes
 	private static final int INITIAL_HEALTH = 1000;// not sure if I want to use
@@ -159,15 +161,16 @@ public class Tree {
 
 		// update health based on how big the tree is, and how much light the
 		// leaves are getting
-		photosynthesis(root, map);
+		processNode(root, map);
 		health -= amount_of_tree;
 		health -= age / OLD_AGE_FACTOR;
 
 		age += 1;
 	}
 
-	private void photosynthesis(BranchNode bn, Grid[][] map) {
+	private void processNode(BranchNode bn, Grid[][] map) {
 		// Process individual nodes here
+		// Photo Synthesis
 		if (bn.leaf_alive) {
 			for (int i = 0; i < leaf_size; i++) {
 				int l = bn.x + i - leaf_size / 2;
@@ -176,11 +179,17 @@ public class Tree {
 					map[l][bn.y].sunlight -= World.LEAF_BLOCK;
 				}
 			}
+			
+			// Kill Leaf if the leaf is too old
+			bn.leaf_age += 1;
+			if (bn.leaf_age >= LEAF_LIFETIME) {
+				bn.killLeaf(this, map);
+			}
 		}
 		// If I really want to be safe, I should put a check for if bn.children.size() > 0
 		// But the for loop here checks it for me already.
 		for (int i = 0; i < bn.children.size(); i++) {
-			photosynthesis(bn.children.get(i), map);
+			processNode(bn.children.get(i), map);
 		}		
 	}
 
